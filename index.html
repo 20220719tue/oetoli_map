@@ -20,7 +20,7 @@
       }
       #map {
         width: 100%;
-        height: 100vh; /* 화면의 수직 높이를 100%로 설정 */
+        height: 100vh;
       }
     </style>
   </head>
@@ -54,10 +54,17 @@
             <p id="markerAddress"></p>
             <p><strong>전화번호</strong></p>
             <p id="markerPhoneNumber"></p>
+            <p><strong>홈페이지</strong></p>
+            <p id="markerURL"></p>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- jQuery, Popper.js, Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
       var mapOptions = {
@@ -83,20 +90,30 @@
         xhr.send(null);
       }
 
+      // 사용자의 현재 위치를 가져오는 함수
+      function getUserLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+          alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      // 현재 위치를 받아와 지도의 중심으로 설정하는 함수
+      function showPosition(position) {
+        var userPosition = new naver.maps.LatLng(
+          position.coords.latitude,
+          position.coords.longitude
+        );
+        map.setCenter(userPosition); // 사용자 위치를 지도의 중심으로 설정
+      }
+
       // JSON 파일 읽어오기
       fetchJSONFile(jsonFilePath, function (data) {
-        // 사용자 위치를 가져와서 지도의 중심으로 설정
-        if (window.userLocation) {
-          var userPosition = new naver.maps.LatLng(
-            window.userLocation.coords.latitude,
-            window.userLocation.coords.longitude
-          );
-          console.log(window.userLocation.coords.latitude);
-          map.setCenter(userPosition);
-        }
-        console.log(window.userLocation);
+        // 사용자 위치 가져오기
+        getUserLocation();
+
         data.forEach((item) => {
-          // console.log(item);
           // item 객체로부터 좌표와 이름 정보 추출
           var x = item._Y;
           var y = item._X;
@@ -119,16 +136,14 @@
             document.getElementById("markerAddress").innerText =
               item.newAddress;
             document.getElementById("markerPhoneNumber").innerText = item.phone;
+            document.getElementById("markerURL").innerHTML =
+              '<a href="' + item.URL + '">' + item.URL + "</a>";
+
             // 모달 표시
             $("#markerModal").modal("show");
           });
         });
       });
     </script>
-
-    <!-- jQuery, Popper.js, Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>

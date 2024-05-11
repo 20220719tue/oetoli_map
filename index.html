@@ -146,7 +146,9 @@
             document.getElementById("markerPhoneNumber").innerText = item.phone;
             document.getElementById("markerType").innerText = "심리센터";
             document.getElementById("markerURL").innerHTML =
-              '<a href="' + item.URL + '">' + item.URL + "</a>";
+              item.URL !== null
+                ? '<a href="' + item.URL + '">' + item.URL + "</a>"
+                : "X";
 
             // 모달 표시
             $("#markerModal").modal("show");

@@ -1,35 +1,51 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>HTML5 API Geolocation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Location Map</title>
+    <!-- 네이버 지도 API 스크립트 추가 -->
+    <script
+      type="text/javascript"
+      src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=0sq0mb7npe"
+    ></script>
+    <style>
+      #map {
+        width: 100%;
+        height: 400px; /* 지도의 높이 설정 */
+      }
+    </style>
   </head>
-
   <body>
-    <h1>geolocation을 이용한 위도와 경도 찾기</h1>
-
-    <button onclick="findLocation()">현재 위치의 위도와 경도</button>
-    <p id="myLocation"></p>
+    <!-- 지도를 표시할 div 요소 -->
+    <div id="map"></div>
 
     <script>
-      var loc = document.getElementById("myLocation");
-      function findLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(showYourLocation);
-        } else {
-          loc.innerHTML =
-            "이 문장은 사용자의 웹 브라우저가 Geolocation API를 지원하지 않을 때 나타납니다!";
-        }
+      // 현재 위치를 가져와서 지도에 표시하는 함수
+      function showUserLocation(latitude, longitude) {
+        var mapOptions = {
+          center: new naver.maps.LatLng(latitude, longitude), // 현재 위치를 중심으로 설정
+          zoom: 16, // 줌 레벨 설정
+        };
+
+        // 지도 생성
+        var map = new naver.maps.Map("map", mapOptions);
+
+        // 현재 위치 마커 생성
+        var marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(latitude, longitude), // 현재 위치로 설정
+          map: map, // 지도에 마커 표시
+        });
       }
 
-      function showYourLocation(position) {
-        loc.innerHTML =
-          "현재 사용자는 위도 " +
-          position.coords.latitude +
-          ", 경도 " +
-          position.coords.longitude +
-          "에 위치하고 있습니다.";
-      }
+      // 사용자의 위치를 가져오는 함수
+      navigator.geolocation.getCurrentPosition((position) => {
+        var latitude = position.coords.latitude; // 위도
+        var longitude = position.coords.longitude; // 경도
+
+        // 위도와 경도를 기반으로 지도에 사용자 위치를 표시
+        showUserLocation(latitude, longitude);
+      });
     </script>
   </body>
 </html>

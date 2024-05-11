@@ -1,51 +1,134 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Location Map</title>
-    <!-- 네이버 지도 API 스크립트 추가 -->
+    <title>oetoli</title>
     <script
       type="text/javascript"
       src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=0sq0mb7npe"
     ></script>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
       #map {
         width: 100%;
-        height: 400px; /* 지도의 높이 설정 */
+        height: 100vh; /* 화면의 수직 높이를 100%로 설정 */
       }
     </style>
   </head>
   <body>
-    <!-- 지도를 표시할 div 요소 -->
     <div id="map"></div>
 
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="markerModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="markerModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="markerName"></h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p><strong>주소</strong></p>
+            <p id="markerAddress"></p>
+            <p><strong>전화번호</strong></p>
+            <p id="markerPhoneNumber"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // 현재 위치를 가져와서 지도에 표시하는 함수
-      function showUserLocation(latitude, longitude) {
-        var mapOptions = {
-          center: new naver.maps.LatLng(latitude, longitude), // 현재 위치를 중심으로 설정
-          zoom: 16, // 줌 레벨 설정
+      var mapOptions = {
+        center: new naver.maps.LatLng(37.5665, 126.978), // 서울 중심 좌표
+        zoom: 16,
+      };
+      var map = new naver.maps.Map("map", mapOptions);
+
+      // JSON 파일 경로
+      var jsonFilePath = "output.json";
+      let arr = [];
+
+      // JSON 파일을 비동기적으로 읽어오는 함수
+      function fetchJSONFile(path, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.overrideMimeType("application/json");
+        xhr.open("GET", path, true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          }
         };
-
-        // 지도 생성
-        var map = new naver.maps.Map("map", mapOptions);
-
-        // 현재 위치 마커 생성
-        var marker = new naver.maps.Marker({
-          position: new naver.maps.LatLng(latitude, longitude), // 현재 위치로 설정
-          map: map, // 지도에 마커 표시
-        });
+        xhr.send(null);
       }
 
-      // 사용자의 위치를 가져오는 함수
-      navigator.geolocation.getCurrentPosition((position) => {
-        var latitude = position.coords.latitude; // 위도
-        var longitude = position.coords.longitude; // 경도
+      // JSON 파일 읽어오기
+      fetchJSONFile(jsonFilePath, function (data) {
+        // 사용자 위치를 가져와서 지도의 중심으로 설정
+        if (window.userLocation) {
+          var userPosition = new naver.maps.LatLng(
+            window.userLocation.coords.latitude,
+            window.userLocation.coords.longitude
+          );
+          console.log(window.userLocation.coords.latitude);
+          map.setCenter(userPosition);
+        }
+        console.log(window.userLocation);
+        data.forEach((item) => {
+          // console.log(item);
+          // item 객체로부터 좌표와 이름 정보 추출
+          var x = item._Y;
+          var y = item._X;
+          var name = item.name;
 
-        // 위도와 경도를 기반으로 지도에 사용자 위치를 표시
-        showUserLocation(latitude, longitude);
+          // 좌표로 LatLng 객체 생성
+          var position = new naver.maps.LatLng(x, y);
+
+          // 마커 생성
+          var marker = new naver.maps.Marker({
+            position: position,
+            map: map,
+            title: name, // 마커에 이름 설정
+          });
+
+          // 마커 클릭 이벤트 리스너 추가
+          naver.maps.Event.addListener(marker, "click", function () {
+            // 모달에 정보 표시
+            document.getElementById("markerName").innerText = name;
+            document.getElementById("markerAddress").innerText =
+              item.newAddress;
+            document.getElementById("markerPhoneNumber").innerText = item.phone;
+            // 모달 표시
+            $("#markerModal").modal("show");
+          });
+        });
       });
     </script>
+
+    <!-- jQuery, Popper.js, Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>

@@ -54,6 +54,8 @@
             <p id="markerAddress"></p>
             <p><strong>전화번호</strong></p>
             <p id="markerPhoneNumber"></p>
+            <p><strong>종류</strong></p>
+            <p id="markerType"></p>
             <p><strong>홈페이지</strong></p>
             <p id="markerURL"></p>
           </div>
@@ -69,13 +71,14 @@
     <script>
       var mapOptions = {
         center: new naver.maps.LatLng(37.5665, 126.978), // 서울 중심 좌표
-        zoom: 16,
+        zoom: 14,
       };
       var map = new naver.maps.Map("map", mapOptions);
 
       // JSON 파일 경로
-      var jsonFilePath = "output.json";
-      let arr = [];
+      var P_jsonFilePath = "P_output.json"; // 심리센터
+      var E_jsonFilePath = "E_output.json"; // 국민취업지원제도 운영기관
+      var E2_jsonFilePath = "E2_output.json"; // 일경험 프로그램 운영기관
 
       // JSON 파일을 비동기적으로 읽어오는 함수
       function fetchJSONFile(path, callback) {
@@ -109,7 +112,7 @@
       }
 
       // JSON 파일 읽어오기
-      fetchJSONFile(jsonFilePath, function (data) {
+      fetchJSONFile(P_jsonFilePath, function (data) {
         // 사용자 위치 가져오기
         getUserLocation();
 
@@ -122,11 +125,16 @@
           // 좌표로 LatLng 객체 생성
           var position = new naver.maps.LatLng(x, y);
 
-          // 마커 생성
+          // 마커 생성 (파란색 마커)
           var marker = new naver.maps.Marker({
             position: position,
             map: map,
             title: name, // 마커에 이름 설정
+            icon: {
+              url: "img/P.png", // 이미지 파일 경로
+              size: new naver.maps.Size(50, 50), // 이미지 크기 지정
+              anchor: new naver.maps.Point(16, 32), // 이미지 앵커 위치 지정
+            },
           });
 
           // 마커 클릭 이벤트 리스너 추가
@@ -136,8 +144,85 @@
             document.getElementById("markerAddress").innerText =
               item.newAddress;
             document.getElementById("markerPhoneNumber").innerText = item.phone;
+            document.getElementById("markerType").innerText = "심리센터";
             document.getElementById("markerURL").innerHTML =
               '<a href="' + item.URL + '">' + item.URL + "</a>";
+
+            // 모달 표시
+            $("#markerModal").modal("show");
+          });
+        });
+      });
+
+      fetchJSONFile(E_jsonFilePath, function (data) {
+        data.forEach((item) => {
+          // item 객체로부터 좌표와 이름 정보 추출
+          var x = item._Y;
+          var y = item._X;
+          var name = item.name;
+
+          // 좌표로 LatLng 객체 생성
+          var position = new naver.maps.LatLng(x, y);
+
+          // 마커 생성 (빨간색 마커)
+          var marker = new naver.maps.Marker({
+            position: position,
+            map: map,
+            title: name, // 마커에 이름 설정
+            icon: {
+              url: "img/E.png", // 이미지 파일 경로
+              size: new naver.maps.Size(50, 50), // 이미지 크기 지정
+              anchor: new naver.maps.Point(16, 32), // 이미지 앵커 위치 지정
+            },
+          });
+
+          // 마커 클릭 이벤트 리스너 추가
+          naver.maps.Event.addListener(marker, "click", function () {
+            // 모달에 정보 표시
+            document.getElementById("markerName").innerText = name;
+            document.getElementById("markerAddress").innerText = item.address;
+            document.getElementById("markerPhoneNumber").innerText = item.phone;
+            document.getElementById("markerType").innerText =
+              "국민취업지원제도 운영기관";
+            document.getElementById("markerURL").innerText = "X";
+
+            // 모달 표시
+            $("#markerModal").modal("show");
+          });
+        });
+      });
+
+      fetchJSONFile(E2_jsonFilePath, function (data) {
+        data.forEach((item) => {
+          // item 객체로부터 좌표와 이름 정보 추출
+          var x = item._Y;
+          var y = item._X;
+          var name = item.name;
+
+          // 좌표로 LatLng 객체 생성
+          var position = new naver.maps.LatLng(x, y);
+
+          // 마커 생성 (보라색 마커)
+          var marker = new naver.maps.Marker({
+            position: position,
+            map: map,
+            title: name, // 마커에 이름 설정
+            icon: {
+              url: "img/E2.png", // 이미지 파일 경로
+              size: new naver.maps.Size(50, 50), // 이미지 크기 지정
+              anchor: new naver.maps.Point(16, 32), // 이미지 앵커 위치 지정
+            },
+          });
+
+          // 마커 클릭 이벤트 리스너 추가
+          naver.maps.Event.addListener(marker, "click", function () {
+            // 모달에 정보 표시
+            document.getElementById("markerName").innerText = name;
+            document.getElementById("markerAddress").innerText = item.address;
+            document.getElementById("markerPhoneNumber").innerText = item.phone;
+            document.getElementById("markerType").innerText =
+              "일경험 프로그램 운영기관";
+            document.getElementById("markerURL").innerText = "X";
 
             // 모달 표시
             $("#markerModal").modal("show");
